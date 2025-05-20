@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Prediction Platform</title>
+  <style>
+    body {
+      font-family: 'Consolas', monospace; /* Classic monospace hacker font */
+      background-color: #000; /* Black background */
+      color: #00ff00; /* Green text - typical hacker color */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      overflow: hidden; /* Hide any potential overflow */
+    }
+
+    /* Animated digital rain background */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: repeating-linear-gradient(0deg, rgba(0, 100, 0, 0.1), rgba(0, 100, 0, 0.1) 1px, transparent 1px, transparent 2px);
+      animation: digitalRain 0.3s linear infinite;
+      z-index: -1;
+    }
+
+    @keyframes digitalRain {
+      from { background-position: 0 0; }
+      to { background-position: 0 20px; }
+    }
+
+    .container {
+      background-color: rgba(0, 0, 0, 0.8); /* Slightly transparent black container */
+      padding: 40px;
+      border-radius: 10px;
+      box-shadow: 0 0 20px #00ff00; /* Green glow */
+      text-align: center;
+      z-index: 1; /* Ensure container is above the rain */
+    }
+
+    h1, h2 {
+      color: #00ff00;
+      text-shadow: 0 0 5px #00ff00;
+    }
+
+    button {
+      padding: 15px 30px;
+      font-size: 1.2em;
+      border: 2px solid #00ff00;
+      border-radius: 5px;
+      background-color: transparent;
+      color: #00ff00;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-shadow: 0 0 3px #00ff00;
+    }
+
+    button:hover {
+      background-color: rgba(0, 255, 0, 0.1);
+      box-shadow: 0 0 10px #00ff00;
+    }
+
+    #paymentArea, #predictionArea {
+      margin-top: 25px;
+      padding: 20px;
+      border: 2px solid #00c853; /* Slightly lighter green */
+      border-radius: 5px;
+      background-color: rgba(0, 0, 0, 0.7);
+      color: #00ff00;
+      text-shadow: 0 0 3px #00ff00;
+      display: none;
+    }
+
+    #paymentArea p, #predictionArea p {
+      margin: 12px 0;
+      font-size: 1.1em;
+    }
+
+    #predictionArea strong {
+      font-weight: bold;
+      font-size: 1.4em;
+      color: #aeea00; /* Brighter green */
+      text-shadow: 0 0 5px #aeea00;
+    }
+
+    .qr-code-container {
+      margin-top: 15px;
+    }
+
+    .qr-code-container img {
+      width: 200px;
+      height: 200px;
+      border: 1px solid #00ff00;
+      border-radius: 5px;
+    }
+
+    #paymentArea a {
+      color: #69f0ae; /* Light green link */
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    #paymentArea a:hover {
+      color: #b9f6ca; /* Lighter green on hover */
+    }
+
+    #passwordPrompt input[type="password"] {
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #00ff00;
+      background-color: #222;
+      color: #00ff00;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="passwordPrompt">
+      <h2>Enter Password</h2>
+      <input type="password" id="passwordInput">
+      <button onclick="checkPassword()">Submit</button>
+      <p id="passwordError" style="color: #ff4d4d; display: none;">Incorrect password.</p>
+    </div>
+
+    <div id="gameContent" style="display: none;">
+      <h1>Prediction Platform</h1>
+      <button id="predictButton">Get Prediction</button>
+
+      <div id="paymentArea">
+      </div>
+
+      <div id="predictionArea">
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const correctPassword = "82100";
+    const passwordPromptDiv = document.getElementById('passwordPrompt');
+    const gameContentDiv = document.getElementById('gameContent');
+    const passwordInput = document.getElementById('passwordInput');
+    const passwordError = document.getElementById('passwordError');
+    const predictButton = document.getElementById('predictButton');
+    const predictionArea = document.getElementById('predictionArea');
+    const paymentArea = document.getElementById('paymentArea');
+    const price = 499;
+    let paymentDone = false;
+
+    function checkPassword() {
+      if (passwordInput.value === correctPassword) {
+        passwordPromptDiv.style.display = 'none';
+        gameContentDiv.style.display = 'block';
+      } else {
+        passwordError.style.display = 'block';
+      }
+    }
+
+    function generateQRCodeAndPaymentLink() {
+      const qrCodeURL = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=drx82@ybl&pn=Shila%20%20Devi&mc=0000&mode=02&purpose=00";
+      const paymentLink = "upi://pay?pa=drx82@ybl&pn=Shila%20%20Devi&mc=0000&mode=02&purpose=00";
+
+      paymentArea.innerHTML = `
+        <p>Price: <strong style="font-size: 1.2em;">₹${price}</strong></p>
+        <div class="qr-code-container">
+          <img src="${qrCodeURL}" alt="UPI QR Code">
+        </div>
+        <p>Scan the QR code to pay or click <a href="${paymentLink}">here</a> to pay via UPI.</p>
+        <button onclick="simulatePayment()" style="margin-top: 15px;">Simulate Payment (For Testing)</button>
+      `;
+    }
+
+    predictButton.addEventListener('click', function() {
+      paymentArea.style.display = 'block';
+      predictionArea.style.display = 'none';
+      generateQRCodeAndPaymentLink();
+    });
+
+    function simulatePayment() {
+      paymentDone = true;
+      alert('Payment Successful (Simulated)! Now click "Get Prediction" again.');
+      paymentArea.style.display = 'none';
+    }
+
+    function checkPaymentAndGeneratePrediction() {
+      if (paymentDone) {
+        const randomNumber = Math.floor(Math.random() * 10);
+        let bigSmall = "";
+        if (randomNumber >= 0 && randomNumber <= 5) {
+          bigSmall = "Small";
+        } else {
+          bigSmall = "Big";
+        }
+        const colors = ['#00e676', '#1e88e5', '#ffeb3b', '#f44336', '#9c27b0']; // More vivid colors
+        const randomColor = colors[Math.floor(Math.random() * colors.length)];
+
+        paymentArea.style.display = 'none';
+        predictionArea.style.display = 'block';
+        predictionArea.innerHTML = `
+          <p>Number: <strong style="font-size: 1.4em; color: #aeea00; text-shadow: 0 0 5px #aeea00;">${randomNumber}</strong></p>
+          <p>Result: <strong style="font-size: 1.4em; color: #69f0ae; text-shadow: 0 0 5px #69f0ae;">${bigSmall}</strong></p>
+          <p>Color: <strong style="font-size: 1.4em; color: ${randomColor}; text-shadow: 0 0 5px ${randomColor};">${colors[Math.floor(Math.random() * colors.length)]}</strong></p>
+        `;
+        paymentDone = false;
+      } else {
+        alert('Please complete the payment to get the prediction.');
+      }
+    }
+
+    predictButton.onclick = function() {
+      if (paymentDone) {
+        checkPaymentAndGeneratePrediction();
+      } else {
+        paymentArea.style.display = 'block';
+        predictionArea.style.display = 'none';
+        generateQRCodeAndPaymentLink();
+      }
+    };
+
+    const simulatePaymentButton = document.querySelector('#paymentArea button');
+    if (simulatePaymentButton) {
+      simulatePaymentButton.addEventListener('click', function() {
+        paymentDone = true;
+        alert('Payment Successful (Simulated)! Now click "Get Prediction" again.');
+        paymentArea.style.display = 'none';
+      });
+    }
+  </script>
+</body>
+</html>
